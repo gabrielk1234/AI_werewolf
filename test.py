@@ -147,15 +147,19 @@ while game_is_running:
             moderator.update_kill_history(roles_other,killed_player, '不確定被狼人殺死或者是被毒殺')
 
         print(messages['killed'].format(player=','.join([player.name for player in killed_dict.keys()])))
-        print()
     elif len(killed_dict) == 1:# 只有一個人死亡
         for killed_player, kill_reason in killed_dict.items():
             moderator.update_kill_history(moderator.left_players,killed_player, kill_reason)
         print(messages['killed'].format(player=','.join([player.name for player in killed_dict.keys()])))
     else: # 沒有死亡
         print(messages['safe'])
-    break
 
+    # 更新玩家的存活名單
+    moderator.left_players = [player for player in moderator.left_players if player.is_alive]
+    moderator.set_team_status()
+    print(f"good_team:{len(moderator.good_team)}, werewolf_team:{len(moderator.werewolf_team)}")
+    
+    # 判斷游戲是否結束
     if (len(moderator.werewolf_team) >= len(moderator.good_team)) or len(moderator.werewolf_team) == 0:
         game_is_running = False
         print(messages['game_over'].format(winner="werewolves" if len(moderator.werewolf_team) >= len(moderator.good_team) else "good_team"))

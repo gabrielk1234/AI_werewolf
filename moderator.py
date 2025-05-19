@@ -33,6 +33,10 @@ class Moderator():
                 player.memory['potion_history'][potion_type]['night'] = self.night
                 player.memory['potion_history'][potion_type]['person'] = person
 
+    def set_team_status(self):
+        self.good_team = [p for p in self.left_players if p.role != 'werewolf']
+        self.werewolf_team = [p for p in self.left_players if p.role == 'werewolf']
+
     def update_kill_history(self,players:list[WerewolfCharacter],killed:WerewolfCharacter,kill_type:str):
         # 更新被殺害的玩家的狀態
         killed.is_alive = False

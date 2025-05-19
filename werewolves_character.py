@@ -1,4 +1,5 @@
 from openai import OpenAI
+import time
 from config import url,api_key,system_prompt,action_prompt
 
 class WerewolfCharacter:
@@ -90,8 +91,6 @@ class WerewolfCharacter:
                                                                    player_alive=self.memory['player_alive'],
                                                                    statement_history=self.memory['statement_history'],
                                                                    has_poison_potion=self.has_poison_potion)
-        if self.role == 'witch':
-            print(self.night_prompt)
         response = self.client.chat.completions.create(
             model="gemini-2.0-flash",
             messages=[
@@ -99,6 +98,7 @@ class WerewolfCharacter:
                 {"role": "user", "content": prompt},
             ]
         )
+        time.sleep(2)
         answer = response.choices[0].message.content
         return answer
 
