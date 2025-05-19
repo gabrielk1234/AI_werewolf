@@ -45,15 +45,14 @@ class WerewolfCharacter:
         self.set_system_prompt()
 
     def set_system_prompt(self):
-        identity_prompt = f"你的名字是{self.name}"
         
-        self.speech_prompt = identity_prompt + system_prompt[self.role]['speech']
-        self.vote_prompt = identity_prompt + system_prompt[self.role]['vote']
+        self.speech_prompt = system_prompt[self.role]['speech']
+        self.vote_prompt = system_prompt[self.role]['vote']
         if self.role == 'werewolf':
-            self.night_prompt = identity_prompt + system_prompt[self.role]['night'].format(self.teammate)
+            self.night_prompt = system_prompt[self.role]['night'].format(teammate=self.teammate,name=self.name)
         elif self.role != 'villager':
-            self.night_prompt = identity_prompt + system_prompt[self.role]['night'] # 村民沒有夜晚的行動
-            
+            self.night_prompt = system_prompt[self.role]['night'].format(name=self.name) # 村民沒有夜晚的行動
+
     def speak(self):
         response = self.client.chat.completions.create(
             model="gemini-2.0-flash",
@@ -91,7 +90,8 @@ class WerewolfCharacter:
                                                                    player_alive=self.memory['player_alive'],
                                                                    statement_history=self.memory['statement_history'],
                                                                    has_poison_potion=self.has_poison_potion)
-
+        if self.role == 'witch':
+            print(self.night_prompt)
         response = self.client.chat.completions.create(
             model="gemini-2.0-flash",
             messages=[

@@ -42,5 +42,5 @@ class Moderator():
                     player.memory['kill_history'][f"night {self.night}"] = {}
                 player.memory['kill_history'][f"night {self.night}"][killed.name] = kill_type
                 player.memory['player_alive'] = [p.name for p in self.left_players if p.is_alive]
-            
+        
             

@@ -33,6 +33,8 @@ while game_is_running:
     moderator.set_night_status()
     use_heal = False
     killed_dict = {}
+    
+    # -------------------------------Night-----------------------------------
     # Day and Night Cycle
     print(messages['night'])
     print(messages['wolf_stage1'])
@@ -130,7 +132,28 @@ while game_is_running:
         except json.JSONDecodeError:
             print("女巫-毒藥步驟解析錯誤")
             print(response)
-        
+            
+    # -------------------------------Night End--------------------------------
+    
+    # --------------------------------Day-----------------------------------
+    print(messages['day'])
+            
+    # 更新狀態，如果有2個人死亡，只有女巫和狼人知道死因
+    if len(killed_dict) > 1:
+        roles = [player for player in moderator.left_players if (player.role == 'werewolf') or (player.role == 'witch')]
+        roles_other = [player for player in moderator.left_players if (player.role != 'werewolf') and (player.role != 'witch')]
+        for killed_player, kill_reason in killed_dict.items():
+            moderator.update_kill_history(roles,killed_player, kill_reason)
+            moderator.update_kill_history(roles_other,killed_player, '不確定被狼人殺死或者是被毒殺')
+
+        print(messages['killed'].format(player=','.join([player.name for player in killed_dict.keys()])))
+        print()
+    elif len(killed_dict) == 1:# 只有一個人死亡
+        for killed_player, kill_reason in killed_dict.items():
+            moderator.update_kill_history(moderator.left_players,killed_player, kill_reason)
+        print(messages['killed'].format(player=','.join([player.name for player in killed_dict.keys()])))
+    else: # 沒有死亡
+        print(messages['safe'])
     break
 
     if (len(moderator.werewolf_team) >= len(moderator.good_team)) or len(moderator.werewolf_team) == 0:
