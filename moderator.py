@@ -14,19 +14,35 @@ class Moderator():
         # Split the players into teams
         self.good_team = [p for p in players if p.role != 'werewolf']
         self.werewolf_team = [p for p in players if p.role == 'werewolf']
+
+    def set_vote_history(self, left_players: list[WerewolfCharacter], vote: dict):
+        for player in left_players:
+            if player.memory['vote_history'].get(f"night {self.night}") is None:
+                player.memory['vote_history'][f"night {self.night}"] = {}
             
-    def set_statement(self, left_players: list[WerewolfCharacter], statement: str):
+            # 如果投票者是自己，更改key名稱至“我”
+            if player.name == list(vote.keys())[0]:
+                player.memory['vote_history'][f"night {self.night}"]['我'] = list(vote.values())[0]
+            else:
+                player.memory['vote_history'][f"night {self.night}"][list(vote.keys())[0]] = list(vote.values())[0]
+
+    def set_statement(self, left_players: list[WerewolfCharacter], statement: dict):
         for player in left_players:
             if player.memory['statement_history'].get(f"night {self.night}") is None:
                 player.memory['statement_history'][f"night {self.night}"] = {}
-            player.memory['statement_history'][f"night {self.night}"] = statement
+            
+            # 如果該發言是自己，更改key名稱至“我”
+            if player.name == list(statement.keys())[0]:
+                player.memory['statement_history'][f"night {self.night}"]['我'] = list(statement.values())[0]
+            else:
+                player.memory['statement_history'][f"night {self.night}"][list(statement.keys())[0]] = list(statement.values())[0]
             
     def set_night_status(self):
         for player in self.left_players:
             player.memory['night'] = self.night
 
     def set_potion_status(self, potion_type: str, person: str = None):
-        for player in self.left_players: # 村民的藥水知情度和女巫的不一樣
+        for player in self.left_players: #   其他玩家的藥水知情度和女巫的不一樣
             if player.name != 'witch':
                 player.memory['potion_history'][potion_type]['night'] = self.night
             else:

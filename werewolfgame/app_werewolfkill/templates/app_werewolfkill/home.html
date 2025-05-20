@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>狼人殺 - 單機 AI 對戰</title>
+
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+
+    <!-- 你自己的 CSS -->
+    <link rel="stylesheet" href="{% static 'app_werewolfkill/style.css' %}" />
+</head>
+<body>
+
+<div class="container py-4">
+    <h2 class="mb-4 text-center">狼人殺 - 單機 AI 對戰</h2>
+    <div class="row g-4">
+        <!-- 聊天區 -->
+        <div class="col-lg-8">
+            <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;"></div>
+            <input type="text" id="user-input" class="form-control" placeholder="輸入你的發言" />
+        </div>
+
+        <!-- 設定區 -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    遊戲設定
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="player-count" class="form-label">玩家人數</label>
+                            <input type="number" id="player-count" class="form-control" min="4" max="12" value="6" />
+                        </div>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" id="prophet" checked />
+                            <label class="form-check-label" for="prophet">預言家</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" id="witch" />
+                            <label class="form-check-label" for="witch">女巫</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="hunter" />
+                            <label class="form-check-label" for="hunter">獵人</label>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100">開始新遊戲</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle (包含 Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const socket = new WebSocket("ws://localhost:8000/ws/game/");
+
+    socket.onopen = function (e) {
+        console.log("✅ WebSocket 已連線成功");
+    };
+
+    socket.onerror = function (error) {
+        console.error("❌ WebSocket 發生錯誤：", error);
+    };
+
+    socket.onclose = function (e) {
+        console.warn("⚠️ WebSocket 關閉：", e);
+    };
+
+    socket.onmessage = function (e) {
+        console.log("📩 收到訊息：", e.data);
+    };
+
+</script>
+</body>
+</html>

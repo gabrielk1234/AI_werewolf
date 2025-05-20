@@ -48,13 +48,13 @@ system_prompt = {
             - 保護隊友狼人不要被投票
             - 不要讓自己的選票看起來刻意或矛盾
 
-            請根據輸入資訊，分析每位玩家的可疑程度，並選出一名你要投票的玩家。
+            請根據輸入資訊，分析每位玩家對你造成威脅的程度，並選出一名你要投票的玩家。
 
             最終請輸出格式如下(請嚴格遵守)：
-            {
+            {{
                 "vote_target": "<player_name>",
                 "reason": "<reason>"
-            }
+            }}
             """,
         "night":"""
             你是一位狼人殺遊戲中的玩家,你的名字是{name}，角色是「狼人」。
@@ -157,10 +157,10 @@ system_prompt = {
             請輸出以下 JSON 格式：
 
             最終請輸出格式如下(請嚴格遵守)：
-            {
+            {{
                 "vote_target": "<player_name>",
                 "reason": "<reason>"
-            }
+            }}
         """,
     },
     "witch":{
@@ -225,10 +225,10 @@ system_prompt = {
             你應選擇你最懷疑是「狼人」的一位玩家，並說明原因。
 
             請輸出以下 JSON 格式(請嚴格遵守)：
-            {
+            {{
             "vote_target": "<player_name>",
             "reason": "<reason>"
-            }
+            }}
             """,
         'night':"""
             你是一名狼人殺中的 AI 玩家，名字是{name}，角色是「女巫」。
@@ -319,10 +319,10 @@ system_prompt = {
 
             請輸出以下 JSON 格式：
 
-            {
+            {{
             "vote_target": "<player_name>",
             "reason": "<reason>"
-            }
+            }}
         """,
         'night':""""
             你是一名狼人殺遊戲中的玩家，名字是{name}，角色是「預言家」。
@@ -363,14 +363,18 @@ action_prompt = {
             - 毒藥剩餘：{has_poison_potion}
             
         """,
-        "last_msg":"""
+        "action_info":"""
             以下為目前的資訊：
-            
+            目前是第{night}晚
+            晚上死亡的玩家：
+            {killed_players}
+            女巫藥品的使用記錄：
+            {potion_history}
             剩餘玩家名單：
             {player_alive}
-            同伴：
+            你的同伴：
             {teammate}
-            之前玩家的發言紀錄：
+            玩家的發言紀錄：
             {statement_history}
             """
     },
@@ -384,7 +388,21 @@ action_prompt = {
             {statement_history}
             之前的查驗記錄：
             {investigate_history}
-        """
+        """,
+        "action_info":"""
+            以下為目前的資訊：
+            目前是第{night}晚
+            晚上死亡的玩家：
+            {killed_players}
+            女巫藥品的使用記錄：
+            {potion_history}
+            剩餘玩家名單：
+            {player_alive}
+            你的查驗結果：
+            {investigate_history}
+            之前玩家的發言紀錄：
+            {statement_history}
+            """
     },
     'witch':{
         "use_heal":"""
@@ -429,9 +447,35 @@ action_prompt = {
             如果不使用毒藥，請輸出：
             {{
             "use_poison": false,
-            "poison_target": None,
+            "poison_target": null,
             "reason": "<reason>"
             }}
+            """,
+        "action_info":"""
+            以下為目前的資訊：
+            目前是第{night}晚
+            晚上死亡的玩家：
+            {killed_players}
+            剩餘玩家名單：
+            {player_alive}
+            你的藥品使用記錄：
+            {potion_history}
+            之前玩家的發言紀錄：
+            {statement_history}
+            """
+    },
+    'villager':{
+        'action_info':"""
+            以下為目前的資訊：
+            目前是第{night}晚
+            晚上死亡的玩家：
+            {killed_players}
+            女巫藥品的使用記錄：
+            {potion_history}
+            剩餘玩家名單：
+            {player_alive}
+            之前玩家的發言紀錄：
+            {statement_history}
             """
     }
 }

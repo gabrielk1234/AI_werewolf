@@ -16,7 +16,7 @@ class WerewolfCharacter:
             'role': role,
             'night':None, # set by moderator
             'teammate': teammate if role == 'werewolf' else None,
-            'vote_history': [], # set by moderator
+            'vote_history': {}, # set by moderator
             'player_alive': [], # set by moderator
             'kill_history': {}, # set by moderator
             'statement_history': {}, # set by moderator
@@ -46,22 +46,31 @@ class WerewolfCharacter:
         self.set_system_prompt()
 
     def set_system_prompt(self):
-        
-        self.speech_prompt = system_prompt[self.role]['speech']
-        self.vote_prompt = system_prompt[self.role]['vote']
+        self.last_msg_prompt = system_prompt[self.role]['last_msg'].format(name=self.name)
+        self.speech_prompt = system_prompt[self.role]['speech'].format(name=self.name)
+        self.vote_prompt = system_prompt[self.role]['vote'].format(name=self.name)
         if self.role == 'werewolf':
             self.night_prompt = system_prompt[self.role]['night'].format(teammate=self.teammate,name=self.name)
         elif self.role != 'villager':
             self.night_prompt = system_prompt[self.role]['night'].format(name=self.name) # 村民沒有夜晚的行動
 
     def speak(self):
+        if self.role == 'werewolf':
+            speech_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"teammate":self.teammate,"statement_history":self.memory['statement_history']}
+        elif self.role == 'seer':
+            speech_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history'],"investigate_history":self.memory['investigate_history']}  
+        elif self.role == 'witch' or self.role == 'villager':
+            # 村民和女巫的 speech_msg_context 內容相同
+            speech_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
+
         response = self.client.chat.completions.create(
             model="gemini-2.0-flash",
             messages=[
                 {"role": "system", "content": self.speech_prompt},
-                {"role": "user", "content": str(self.memory['statement_history'])},
+                {"role": "user", "content": action_prompt[self.role]['action_info'].format(**speech_msg_context)},
             ]
         )
+        time.sleep(2)
         answer = response.choices[0].message.content
         return answer
     
@@ -103,12 +112,42 @@ class WerewolfCharacter:
         return answer
 
     def vote(self):
+        if self.role == 'werewolf':
+            vote_info = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"teammate":self.teammate,"statement_history":self.memory['statement_history']}
+        elif self.role == 'seer':
+            vote_info = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history'],"investigate_history":self.memory['investigate_history']}  
+        elif self.role == 'witch' or self.role == 'villager':
+            # 村民和女巫的 speech_msg_context 內容相同
+            vote_info = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
+
         response = self.client.chat.completions.create(
             model="gemini-2.0-flash",
             messages=[
                 {"role": "system", "content": self.vote_prompt},
-                {"role": "user", "content": str(self.memory)},
+                {"role": "user", "content": action_prompt[self.role]['action_info'].format(**vote_info)},
             ]
         )
+        time.sleep(2)
         answer = response.choices[0].message.content
         return answer
+    
+    def last_msg(self):
+        if self.role == 'werewolf':
+            last_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"teammate":self.teammate,"statement_history":self.memory['statement_history']}
+        elif self.role == 'seer':
+            last_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history'],"investigate_history":self.memory['investigate_history']}  
+        elif self.role == 'witch' or self.role == 'villager':
+            # 村民和女巫的 last_msg_context 內容相同
+            last_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
+
+        response = self.client.chat.completions.create(
+            model="gemini-2.0-flash",
+            messages=[
+                {"role": "system", "content": self.last_msg_prompt},
+                {"role": "user", "content": action_prompt[self.role]['action_info'].format(**last_msg_context)},
+            ]
+        )
+        time.sleep(2)
+        answer = response.choices[0].message.content
+        return answer
+    
