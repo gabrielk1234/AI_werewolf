@@ -75,6 +75,12 @@ function connectSocket() {
     if (data.type == 'system') {
       chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
     }
+    else if (data.type == 'god') {
+      chatbox.innerHTML += `<div class="message god">${data.value}</div>`;
+    }
+    else if (data.type == 'player') {
+      chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
+    }
   };
 
   socket.onclose = function() {

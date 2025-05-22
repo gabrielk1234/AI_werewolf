@@ -9,7 +9,8 @@
     "wolf_stage2":"😈 狼人要殺的玩家是{player}。\n",
     "seer_stage1":"🧙‍♀️ 預言家請睜眼，選擇你要查驗的對象。\n",
     "seer_stage2":"🧙‍♀️ 預言家，你要查驗的對象是{}\n",
-    "witch_stage1":"🧪 女巫請睜眼。今晚被殺的是：{player}。你要使用解藥救他嗎？\n",
+    "witch_stage1_god":"🧪 女巫請睜眼。今晚被殺的是：{player}。你要使用解藥救他嗎？\n",
+    "witch_stage1":"🧪 女巫請睜眼。今晚被殺的是...。你要使用解藥救他嗎？\n",
     "witch_stage2":"🧪 女巫，你是否要使用毒藥殺其他人？\n",
     "witch_stage3":"🧪 女巫，你要毒的人是{player}。\n",
 

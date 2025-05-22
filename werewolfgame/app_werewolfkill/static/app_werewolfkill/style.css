@@ -23,3 +23,15 @@
     background-color: #444;
     text-align: left;
 }
+
+.message.god {
+    align-self: flex-start;
+    background-color: #10c43d;
+    text-align: left;
+}
+
+.message.player {
+    align-self: flex-start;
+    background-color: #be7b23;
+    text-align: left;
+}

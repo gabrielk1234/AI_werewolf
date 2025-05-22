@@ -39,11 +39,10 @@ while True:
     # Get The potion status
     potion_status = {'has_heal':witch.has_heal_potion, 'has_poison':witch.has_poison_potion}
     
-    # Random selection of the werewolf
+    # Werewolf action --------------------------------------
     rdm_wolf = random.choice(moderator.werewolf_team)
     response = rdm_wolf.night_action(potion_status=potion_status)
     
-    # Werewolf action --------------------------------------
     try:
         print(response) # 查看狼人選擇的邏輯
         
@@ -158,7 +157,7 @@ while True:
     # 第一晚遺言階段（第一晚被毒被殺才有遺言）
     if moderator.night == 1:
         for killed_p in killed_dict.keys():
-            print(messages['last_msg'].format(player=player.name))
+            print(messages['last_msg'].format(player=killed_p.name))
 
             last_msg = killed_p.last_msg()
             # 儲存遺言記錄
