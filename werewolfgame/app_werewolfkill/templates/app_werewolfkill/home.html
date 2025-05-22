@@ -66,13 +66,13 @@ function connectSocket() {
   const socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
 
   socket.onopen = function() {
-    socket.send('start');
+    socket.send('game_start');
   };
   
   socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     const chatbox = document.getElementById('chat-box');
-    if (data.type == 'message') {
+    if (data.type == 'system') {
       chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
     }
   };
