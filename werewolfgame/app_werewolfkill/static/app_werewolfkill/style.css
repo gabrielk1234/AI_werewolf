@@ -1,11 +1,25 @@
-#chat-box .message {
-    margin-bottom: 10px;
-}
-
 #chat-box .ai {
     color: #0d6efd; /* Bootstrap primary color */
 }
 
 #chat-box .player {
     color: #198754; /* Bootstrap success color */
+}
+
+#chat-box {
+    display: flex;
+    flex-direction: column; /* 垂直排列訊息 */
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    color: rgb(189, 186, 186);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.message.system {
+    align-self: flex-start;
+    background-color: #444;
+    text-align: left;
 }

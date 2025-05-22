@@ -20,8 +20,10 @@
     <div class="row g-4">
         <!-- 聊天區 -->
         <div class="col-lg-8">
-            <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;"></div>
-            <input type="text" id="user-input" class="form-control" placeholder="輸入你的發言" />
+            <div class="card" style="height:600px">
+                <div id="chat-box" class="border rounded p-3 mb-3"></div>
+                <input type="text" id="user-input" class="form-control" placeholder="輸入你的發言" />
+            </div>
         </div>
 
         <!-- 設定區 -->
@@ -64,16 +66,14 @@ function connectSocket() {
   const socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
 
   socket.onopen = function() {
-    socket.send('get_info');
+    socket.send('start');
   };
-
+  
   socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-    const output = document.getElementById('output');
-    if (data.type === 'name') {
-      output.innerHTML += `<p>姓名：${data.value}</p>`;
-    } else if (data.type === 'student_id') {
-      output.innerHTML += `<p>學號：${data.value}</p>`;
+    const chatbox = document.getElementById('chat-box');
+    if (data.type == 'message') {
+      chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
     }
   };
 
