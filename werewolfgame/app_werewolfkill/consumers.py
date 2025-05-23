@@ -30,7 +30,11 @@ class Myconsumer(AsyncWebsocketConsumer):
             for msg in msg_to_send:
                 await self.send(text_data=json.dumps(msg))
                 await asyncio.sleep(2)
+            
         # Night Routine
-        for msg in self.gm.night_routine(first_night=True):
-            await self.send(text_data=json.dumps(msg))
-            await asyncio.sleep(2)
+        while not self.gm.end:
+            for msg in self.gm.night_routine():
+                await self.send(text_data=json.dumps(msg))
+                await asyncio.sleep(2)
+            
+        

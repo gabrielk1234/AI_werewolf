@@ -1,11 +1,3 @@
-#chat-box .ai {
-    color: #0d6efd; /* Bootstrap primary color */
-}
-
-#chat-box .player {
-    color: #198754; /* Bootstrap success color */
-}
-
 #chat-box {
     display: flex;
     flex-direction: column; /* 垂直排列訊息 */
@@ -19,19 +11,30 @@
 }
 
 .message.system {
-    align-self: flex-start;
+    align-self: center;
     background-color: #444;
     text-align: left;
+    max-width: 50%;
 }
 
 .message.god {
     align-self: flex-start;
-    background-color: #10c43d;
+    background-color: #236433;
     text-align: left;
 }
 
 .message.player {
     align-self: flex-start;
-    background-color: #be7b23;
+    background-color: #271745;
     text-align: left;
+}
+
+.message {
+    margin-bottom:10px;
+    padding: 10px;
+    word-wrap: break-word;         /* 長字自動斷行 */
+    word-break: break-word;        /* 中文或長英文字自動換行 */
+    overflow-wrap: break-word;     /* 保險起見，多一層保護 */
+    white-space: pre-wrap;         /* 保留換行，但允許自動換行 */
+    border-radius: 15px;
 }

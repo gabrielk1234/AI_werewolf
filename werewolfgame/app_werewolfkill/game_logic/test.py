@@ -29,6 +29,7 @@ class GameMaster():
         self.messages = messages
 
         # Inital Status
+        self.end = False
         self.used_heal = False # 這晚是否使用解藥了？
         self.killed_dict = {} # 這晚被殺害的人是？
         self.potion_status = {} # 女巫的解藥和毒藥是否被用過了
@@ -44,8 +45,9 @@ class GameMaster():
     def night_routine(self,first_night=True):
         # Set Status
         self.moderator.set_night_status() # 設定玩家天數狀態
-        self.use_heal = False # 是否要用解藥
+        self.used_heal = False # 這晚用過解藥了嗎
         self.killed_dict = {}
+        random.shuffle(self.moderator.left_players)
         
         msg = {'type':'system','value':self.messages['night'] + "今天是第" + str(self.moderator.night) + "晚"}
         yield msg
@@ -98,26 +100,33 @@ class GameMaster():
         yield msg
 
         # Renew left player dict
-        for type,msg in self.renew_killed_list():
-            msg = {'type':type,'value':msg}
+        killed_list = self.renew_killed_list()
+        print(next(killed_list))
+        for type,msg_ in killed_list:
+            msg = {'type':type,'value':msg_}
             yield msg
 
         # Confirm is Game Over?
         msg = {'type':'god','value':f"good_team:{len(self.moderator.good_team)}, werewolf_team:{len(self.moderator.werewolf_team)}"}
         yield msg
+        
         if (len(self.moderator.werewolf_team) >= len(self.moderator.good_team)) or len(self.moderator.werewolf_team) == 0:
             msg = {'type':'system','value':self.messages['game_over'].format(winner="werewolves" if len(self.moderator.werewolf_team) >= len(self.moderator.good_team) else "good_team")}
-            return msg
+            self.end = True
+            yield msg
         
-        # 發言階段，從剩餘玩家開始發言
-        for type,msg in self.speech_stage():
-            msg = {'type':type,'value':msg}
-            yield msg
+        if not self.end:
+            # 發言階段，從剩餘玩家開始發言
+            for type,msg in self.speech_stage():
+                msg = {'type':type,'value':msg}
+                yield msg
 
-        # 投票階段
-        for type,msg in self.vote_stage():
-            msg = {'type':type,'value':msg}
-            yield msg
+            # 投票階段
+            for type,msg in self.vote_stage():
+                msg = {'type':type,'value':msg}
+                yield msg
+                
+            self.moderator.night += 1
 
     def vote_stage(self):
         yield 'system',self.messages['vote_stage1']
@@ -250,10 +259,10 @@ class GameMaster():
 
         
     def witch_action_poison(self,kill_target):  
-        if self.witch.is_alive and self.witch.has_poison_potion and not self.used_heal: # 女巫還活著，有毒藥，以及沒使用過解藥的情況下
+        if self.witch.is_alive and self.witch.has_poison_potion and not self.used_heal: # 女巫還活著，有毒藥，以及這局沒使用過解藥的情況下
             response = self.witch.night_action(killed_player=kill_target.name, potion_type='poison')
             try:
-                print(response) # 查看女巫選擇的邏輯
+                print(response) # 查看女巫選擇毒藥的邏輯
                 response = extract_json(response)
                 use_poison = response['use_poison']
                 poison_target = response['poison_target']
@@ -274,7 +283,13 @@ class GameMaster():
                 print("女巫-毒藥步驟解析錯誤")
                 print(response)
                 assert e
-    
+
+        elif not self.witch.is_alive:
+            return "女巫已經被殺了，無法使用毒藥"
+        
+        else:
+            return "女巫已經使用過解藥了"
+           
     def renew_killed_list(self):
         # 更新狀態，如果有2個人死亡，只有女巫和狼人知道死因
         if len(self.killed_dict) > 1:
@@ -283,14 +298,14 @@ class GameMaster():
             for killed_player, kill_reason in self.killed_dict.items():
                 self.moderator.update_kill_history(roles,killed_player, kill_reason)
                 self.moderator.update_kill_history(roles_other,killed_player, '不確定被狼人殺死或者是被毒殺')
-            yield 'system',self.messages['killed'].format(player=','.join([player.name for player in self.killed_dict.keys()]))
+            yield ('system',self.messages['killed'].format(player=','.join([player.name for player in self.killed_dict.keys()])))
             
         elif len(self.killed_dict) == 1:# 只有一個人死亡
             for killed_player, kill_reason in self.killed_dict.items():
                 self.moderator.update_kill_history(self.moderator.left_players,killed_player, kill_reason)
             yield self.messages['killed'].format(player=','.join([player.name for player in self.killed_dict.keys()]))
         else: # 沒有死亡
-            yield 'system',self.messages['safe']
+            yield ('system',self.messages['safe'])
         
         # 更新存活名單
         self.moderator.left_players = [player for player in self.moderator.left_players if player.is_alive]
