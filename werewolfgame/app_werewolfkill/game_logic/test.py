@@ -79,23 +79,19 @@ class GameMaster():
         msg = {'type':'god','value':self.messages['witch_stage1_god'].format(player=kill_target.name)}
         yield msg
 
-        if self.witch.is_alive:
-            # Heal Stage
-            witch_heal_msg = self.witch_action_heal(kill_target)
-            msg = {'type':'god','value':witch_heal_msg}
-            yield msg
+        # Heal Stage
+        witch_heal_msg = self.witch_action_heal(kill_target)
+        msg = {'type':'god','value':witch_heal_msg}
+        yield msg
 
-            # 
-            msg = {'type':'system','value':self.messages['witch_stage2']}
-            yield msg
+        # 女巫是否要用毒藥
+        msg = {'type':'system','value':self.messages['witch_stage2']}
+        yield msg
 
-            # Poison Stage
-            witch_poison_msg = self.witch_action_poison(kill_target)
-            msg = {'type':'god','value':witch_poison_msg}
-            yield msg
-
-        else: # 如果
-            self.killed_dict[kill_target] = '被狼人殺死'
+        # Poison Stage
+        witch_poison_msg = self.witch_action_poison(kill_target)
+        msg = {'type':'god','value':witch_poison_msg}
+        yield msg
 
         # Day ....
         msg = {'type':'system','value':self.messages['day']}
@@ -114,11 +110,60 @@ class GameMaster():
             return msg
         
         # 發言階段，從剩餘玩家開始發言
+        for type,msg in self.speech_stage():
+            msg = {'type':type,'value':msg}
+            yield msg
 
+        # 投票階段
+        for type,msg in self.vote_stage():
+            msg = {'type':type,'value':msg}
+            yield msg
 
-        
+    def vote_stage(self):
+        yield 'system',self.messages['vote_stage1']
+        vote_dict = {player: 0 for player in self.moderator.left_players}
+        for player in self.moderator.left_players:
+            response = player.vote()
+            response = extract_json(response)
+            vote_target = response['vote_target']
+            vote_target = [p for p in self.moderator.left_players if p.name == vote_target][0]
+            vote_dict[vote_target] += 1
+
+            if vote_target.name not in [player.name for player in self.moderator.left_players]:
+                print(f"{player.name}選擇的投票目標不在存活名單中")
+                AssertionError(f"{player.name}選擇的投票目標不在存活名單中")
+
+            # 儲存投票記錄
+            statement = {player.name: vote_target.name}
+            self.moderator.set_vote_history(self.moderator.left_players,statement)
+        # 計算投票結果
+        yield 'system',"投票結果為：\n" + '，'.join([f"{player.name}:{vote}" for player,vote in vote_dict.items()])
+        out_player = max(vote_dict,key=vote_dict.get)
+        yield 'system',self.messages['vote_stage3'].format(player=out_player.name)
+
+        # 被投玩家發表遺言
+        yield 'system',self.messages['last_msg'].format(player=out_player.name)
+        last_msg = out_player.last_msg()
+        # 儲存遺言記錄
+        statement = {out_player.name: last_msg}
+        self.moderator.set_statement(self.moderator.left_players,statement)
+        yield 'player',last_msg
+
+        # 更新被投票玩家的狀態
+        self.moderator.update_kill_history(self.moderator.left_players,out_player, '被投票出局')
+
     def speech_stage(self):
-        pass
+        # 發言階段，從剩餘玩家開始發言
+        random.shuffle(self.moderator.left_players)
+        for player in self.moderator.left_players:
+            yield 'system',self.messages['speech'].format(player=player.name)
+
+            speech = player.speak()
+            # 儲存發言記錄
+            statement = {player.name: speech}
+            self.moderator.set_statement(self.moderator.left_players,statement)
+            yield 'player',speech
+        yield 'system',self.messages['speech_end']
 
     def wolf_action(self):
         # Werewolf action --------------------------------------
@@ -183,15 +228,21 @@ class GameMaster():
                     self.moderator.set_potion_status(potion_type='heal')
 
                     msg = f"女巫{self.witch.name}選擇使用了解藥，救了{kill_target.name}"
+                    self.used_heal = True
                 else: # 女巫選擇不使用解藥
-                    print(f"女巫{self.witch.name}選擇不使用解藥")
+                    msg = f"女巫{self.witch.name}選擇不使用解藥"
                     self.killed_dict[kill_target] = '被狼人殺死'
+
             except json.JSONDecodeError as e:
                 print("女巫-救人步驟解析錯誤")
                 print(response)
                 assert e
         elif self.witch.is_alive and not self.witch.has_heal_potion: # 女巫還活著，但沒有解藥的情況下
             msg = "女巫沒有解藥了"
+            self.killed_dict[kill_target] = '被狼人殺死'
+
+        elif not self.witch.is_alive:
+            msg = "女巫已經被殺了，無法使用解藥"
             self.killed_dict[kill_target] = '被狼人殺死'
 
 
