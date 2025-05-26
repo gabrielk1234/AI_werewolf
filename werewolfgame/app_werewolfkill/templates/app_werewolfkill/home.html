@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<div class="container py-4">
+<div class="container-fluid py-4">
     <h2 class="mb-4 text-center">狼人殺 - 單機 AI 對戰</h2>
     <div class="row g-4">
         <!-- 聊天區 -->
@@ -34,59 +34,75 @@
                 </div>
                 <div class="card-body">
                     <form>
-                        <div class="mb-3">
-                            <label for="player-count" class="form-label">玩家人數</label>
-                            <input type="number" id="player-count" class="form-control" min="4" max="12" value="6" />
-                        </div>
                         <div class="form-check mb-2">
-                            <input type="checkbox" class="form-check-input" id="prophet" checked />
-                            <label class="form-check-label" for="prophet">預言家</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input type="checkbox" class="form-check-input" id="witch" />
-                            <label class="form-check-label" for="witch">女巫</label>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="hunter" />
-                            <label class="form-check-label" for="hunter">獵人</label>
-                        </div>
-                        <button type="button" class="btn btn-primary w-100">開始新遊戲</button>
+                            <input type="checkbox" class="form-check-input" id="god-mode"/>
+                            <label class="form-check-label" for="god-mode">上帝視角</label>
+                        </div>  
+                        <button type="button" class="btn btn-primary w-100" id="start_game_btn">開始新遊戲</button>
                     </form>
                 </div>
             </div>
+
+            <div class="my-2"></div>
+
+            <div class="card">
+                  <div class="card-header bg-primary text-white">
+                      上帝視角
+                  </div>
+                  <div class="card-body" >
+                    <div id="god-mode-box" class="border rounded p-3 mb-3" style="height:300px"></div>
+                  </div>
+              </div>
+            </div>
         </div>
-    </div>
+
 </div>
 
 <!-- Bootstrap 5 JS Bundle (包含 Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-connectSocket();
-function connectSocket() {
-  const socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
+  <script>
 
-  socket.onopen = function() {
-    socket.send('game_start');
-  };
-  
-  socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+  let socket;
+
+  function connectSocket() {
+    socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
     const chatbox = document.getElementById('chat-box');
-    if (data.type == 'system') {
-      chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
-    }
-    else if (data.type == 'god') {
-      chatbox.innerHTML += `<div class="message god">${data.value}</div>`;
-    }
-    else if (data.type == 'player') {
-      chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
-    }
-  };
+    const godmode_box = document.getElementById('god-mode-box');
+    socket.onopen = function() {
+      console.log("WebSocket 已連線");
+      chatbox.innerHTML += `<div class="message system"> 連綫成功，請點擊開始游戲！ </div>`;
+    };
+    
+    socket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const isGodMode = document.getElementById('god-mode').checked;
+      if (data.type == 'system') {
+        chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
+      }
+      else if ((data.type == 'god') && (isGodMode)) {
+        godmode_box.innerHTML += `<div class="message god">${data.value}</div>`;
+      }
+      else if (data.type == 'player') {
+        chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
+      }
+      
+    };
 
-  socket.onclose = function() {
-    console.log("連線關閉");
-  };
-}
-</script>
+    socket.onclose = function() {
+      console.log("連線關閉");
+    };
+  }
+
+  connectSocket();
+
+  // 綁定按鈕事件
+  document.getElementById('start_game_btn').addEventListener('click', function() {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send('game_start');
+    } else {
+      console.log("WebSocket 尚未連線");
+    }
+  });
+  </script>
 </body>
 </html>

@@ -10,6 +10,18 @@
     margin-bottom: 10px;
 }
 
+#god-mode-box{
+    display: flex;
+    flex-direction: column; /* 垂直排列訊息 */
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    color: rgb(76 61 61);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
 .message.system {
     align-self: center;
     background-color: #444;
@@ -19,7 +31,7 @@
 
 .message.god {
     align-self: flex-start;
-    background-color: #236433;
+    background-color: #cf8e15;
     text-align: left;
 }
 
@@ -37,4 +49,18 @@
     overflow-wrap: break-word;     /* 保險起見，多一層保護 */
     white-space: pre-wrap;         /* 保留換行，但允許自動換行 */
     border-radius: 15px;
+}
+
+.full-height {
+    height: 100vh;  
+}
+
+.god-view-card {
+    flex-grow: 1;         /* 撐滿剩餘高度 */
+    overflow-y: auto;     /* 若內容超過則滾動 */
+}
+
+.card-body-scroll {
+    overflow-y: auto;
+    max-height: calc(100% - 56px); /* 減去 card-header 的高度 */
 }
