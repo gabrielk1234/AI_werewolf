@@ -3,8 +3,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import os
 import yaml
+import datetime
 import asyncio
-from app_werewolfkill.game_logic.test import GameMaster
+from app_werewolfkill.game_logic.gamemaster import GameMaster
+from app_werewolfkill.game_logic.gamelog import GameLogPDF
 
 class Myconsumer(AsyncWebsocketConsumer):
     def load_messages(self):
@@ -19,6 +21,8 @@ class Myconsumer(AsyncWebsocketConsumer):
         await self.accept()
         self.load_messages()
         self.gm = GameMaster(self.messages)
+        self.pdf = GameLogPDF()
+        self.pdf.add_page()
 
     async def disconnect(self, close_code):
         print("WebSocket disconnected")
@@ -28,13 +32,18 @@ class Myconsumer(AsyncWebsocketConsumer):
         if text_data == "game_start":
             msg_to_send = self.gm.game_start()
             for msg in msg_to_send:
+                self.pdf.write(msg)
                 await self.send(text_data=json.dumps(msg))
                 await asyncio.sleep(2)
             
         # Night Routine
         while not self.gm.end:
             for msg in self.gm.night_routine():
+                self.pdf.write(msg)
                 await self.send(text_data=json.dumps(msg))
                 await asyncio.sleep(2)
-            
-        
+                
+        # Game End
+        pdf_file_path = "GameLog"
+        self.pdf.output(pdf_file_path+f'/game_log_{datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")}.pdf', "F")
+
