@@ -8,7 +8,7 @@
 
     <!-- Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- 你自己的 CSS -->
     <link rel="stylesheet" href="{% static 'app_werewolfkill/style.css' %}" />
@@ -64,7 +64,8 @@
                     游玩記錄下載
                 </div>
                 <div class="card-body">
-                    
+                  <ul id ='pdf-box' >
+                  </ul>
                 </div>
             </div>
               
@@ -82,9 +83,11 @@
     socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
     const chatbox = document.getElementById('chat-box');
     const godmode_box = document.getElementById('god-mode-box');
+    const pdf_box = document.getElementById('pdf-box');
     socket.onopen = function() {
       console.log("WebSocket 已連線");
       chatbox.innerHTML += `<div class="message system"> 連綫成功，請點擊開始游戲！ </div>`;
+      socket.send('load_pdf');
     };
     
     socket.onmessage = function(e) {
@@ -98,6 +101,35 @@
       }
       else if (data.type == 'player') {
         chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
+      }
+      else if (data.type == 'load_pdf') {
+        console.log(data);
+        for (var i = 0; i < data.pdf.length; i++) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2';
+          li.innerHTML = `
+            <a href="/media/GameLog/${data.pdf[i]}" class="btn btn-outline-danger btn-sm" download>
+              <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
+            </a>
+            <span class="text-muted">${data.date[i]}</span>
+          `;
+
+          // 插到最上方
+          pdf_box.prepend(li);
+        }
+      }
+      else if (data.type == 'pdf') {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2';
+        li.innerHTML = `
+          <a href="/media/GameLog/${data.filename}" class="btn btn-outline-danger btn-sm" download>
+            <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
+          </a>
+          <span class="text-muted">${data.date}</span>
+        `;
+
+        // 插到最上方
+        pdf_box.prepend(li);
       }
       
     };
