@@ -1,4 +1,11 @@
-api_key = 'AIzaSyALbRzIKuv3jySxqiFMwtexAbqehcqKGic'
+import os
+
+
+api_key = os.environ['GEMINI_API_KEY']
+
+if not api_key:
+    raise ValueError("環境變數 GEMINI_API_KEY 未設定。請確認系統環境變數或 .env 檔案。")
+
 url="https://generativelanguage.googleapis.com/v1beta/openai/"
 
 

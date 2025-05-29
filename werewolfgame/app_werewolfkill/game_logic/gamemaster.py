@@ -1,11 +1,6 @@
-import yaml
-import time
 import random
 import json
-import os
 
-from openai import OpenAI
-from app_werewolfkill.game_logic.config import api_key, system_prompt
 from app_werewolfkill.game_logic.werewolves_character import WerewolfCharacter
 from app_werewolfkill.game_logic.moderator import Moderator
 from app_werewolfkill.game_logic.utils import extract_json

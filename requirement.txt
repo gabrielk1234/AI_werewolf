@@ -1,3 +1,5 @@
-channels=3.0.4
+channels==3.0.4
+openai==1.75.0
+django==5.0.3
 fpdf2
 PyMuPDF
