@@ -17,12 +17,12 @@
 
 <div class="container-fluid py-4">
     <h2 class="mb-4 text-center">狼人殺 - 單機 AI 對戰</h2>
-    <div class="row g-4 mb-2">
+    <div class="row g-4 mb-3">
         <!-- 聊天區 -->
         <div class="col-lg-8">
             <div class="card" style="height:600px">
                 <div id="chat-box" class="border rounded p-3 mb-3"></div>
-                <input type="text" id="user-input" class="form-control" placeholder="輸入你的發言" />
+                <input type="text" id="user-input" class="form-control" placeholder="輸入你的發言(未開發玩家可游玩的功能)" />
             </div>
         </div>
 
@@ -56,99 +56,175 @@
         </div>
     </div>
 
-    <div class="row d-flex justify-content-center">
+    <div class="row d-flex justify-content-center mb-3">
+        <!-- 檔案上傳區 -->
+        <div class="col-lg-8">
+            <div class="card d-flex flex-column" style="height: 600px;">
+                <div class="card-header bg-primary text-white">
+                    戰局分析
+                </div>
+                <div class="card-body" style="flex: 0 0 50px;">
+                  <div id="drop-zone" class="border p-3 text-center bg-light h-100">
+                    拖曳 PDF 到這裡分析
+                  </div>
+                </div>
+
+                <div class="card-header bg-primary text-white">
+                    分析結果
+                </div>
+                <div class="card-body overflow-auto" style="flex: 1;">
+                    <!-- Loading Spinner -->
+                    <div id="loading" class="text-center my-4" style="display: none;">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-2 text-muted">分析中...</p>
+                    </div>
+                    <div id="result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
         <!-- 檔案下載區 -->
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     游玩記錄下載
                 </div>
-                <div class="card-body">
+                <div class="card-body overflow-auto" style="max-height: 800px;">
                   <ul id ='pdf-box' >
                   </ul>
                 </div>
             </div>
-              
-        </div>
+        </div>        
+        
     </div>
 </div>
 
 <!-- Bootstrap 5 JS Bundle (包含 Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  let socket;
+<script>
+const dropZone = document.getElementById('drop-zone');
+const resultBox = document.getElementById('result');
 
-  function connectSocket() {
-    socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
-    const chatbox = document.getElementById('chat-box');
-    const godmode_box = document.getElementById('god-mode-box');
-    const pdf_box = document.getElementById('pdf-box');
-    socket.onopen = function() {
-      console.log("WebSocket 已連線");
-      chatbox.innerHTML += `<div class="message system"> 連綫成功，請點擊開始游戲！ </div>`;
-      socket.send('load_pdf');
-    };
-    
-    socket.onmessage = function(e) {
-      const data = JSON.parse(e.data);
-      const isGodMode = document.getElementById('god-mode').checked;
-      if (data.type == 'system') {
-        chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
-      }
-      else if ((data.type == 'god') && (isGodMode)) {
-        godmode_box.innerHTML += `<div class="message god">${data.value}</div>`;
-      }
-      else if (data.type == 'player') {
-        chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
-      }
-      else if (data.type == 'load_pdf') {
-        console.log(data);
-        for (var i = 0; i < data.pdf.length; i++) {
-          const li = document.createElement('li');
-          li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2';
-          li.innerHTML = `
-            <a href="/media/GameLog/${data.pdf[i]}" class="btn btn-outline-danger btn-sm" download>
-              <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
-            </a>
-            <span class="text-muted">${data.date[i]}</span>
-          `;
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('border-primary');
+  dropZone.classList.remove('bg-light');
+  dropZone.classList.add('bg-secondary');
+});
 
-          // 插到最上方
-          pdf_box.prepend(li);
-        }
-      }
-      else if (data.type == 'pdf') {
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('border-primary');
+  dropZone.classList.remove('bg-secondary');
+  dropZone.classList.add('bg-light');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  dropZone.classList.remove('border-primary');
+  dropZone.classList.remove('bg-secondary');
+  dropZone.classList.add('bg-light');
+  e.preventDefault();
+
+  const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+
+  if (url && url.endsWith('.pdf')) {
+    // 讓後端 fetch 分析 PDF URL（非本地檔案）
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("result").innerHTML = "";
+    analyzePDFByUrl(url)
+  } else {
+    resultBox.innerText = '請拖曳 PDF 檔案或連結';
+  }
+});
+
+let socket;
+
+function analyzePDFByUrl(url) {
+  $.ajax({
+      type: "POST",
+      url: "api_read_pdf/",
+      data: {
+        url: url,
+      }, // pass to server
+      success: function (received) {
+        document.getElementById("loading").style.display = "none";
+        resultBox.innerHTML = marked.parse(received['report']);
+      }, //success function
+    })
+}
+
+function connectSocket() {
+  socket = new WebSocket('ws://' + window.location.host + '/ws/userinfo/');
+  const chatbox = document.getElementById('chat-box');
+  const godmode_box = document.getElementById('god-mode-box');
+  const pdf_box = document.getElementById('pdf-box');
+  socket.onopen = function() {
+    console.log("WebSocket 已連線");
+    chatbox.innerHTML += `<div class="message system"> 連綫成功，請點擊開始游戲！ </div>`;
+    socket.send('load_pdf');
+  };
+  
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const isGodMode = document.getElementById('god-mode').checked;
+    if (data.type == 'system') {
+      chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
+    }
+    else if ((data.type == 'god') && (isGodMode)) {
+      godmode_box.innerHTML += `<div class="message god">${data.value}</div>`;
+    }
+    else if (data.type == 'player') {
+      chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
+    }
+    else if (data.type == 'load_pdf') {
+      for (var i = 0; i < data.pdf.length; i++) {
         const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2';
+        li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 p-1';
         li.innerHTML = `
-          <a href="/media/GameLog/${data.filename}" class="btn btn-outline-danger btn-sm" download>
+          <a href="/media/GameLog/${data.pdf[i]}" class="btn btn-outline-danger btn-sm" download>
             <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
           </a>
-          <span class="text-muted">${data.date}</span>
+          <span class="text-muted">${data.date[i]}</span>
         `;
 
         // 插到最上方
         pdf_box.prepend(li);
       }
-      
-    };
-
-    socket.onclose = function() {
-      console.log("連線關閉");
-    };
-  }
-
-  connectSocket();
-
-  // 綁定按鈕事件
-  document.getElementById('start_game_btn').addEventListener('click', function() {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send('game_start');
-    } else {
-      console.log("WebSocket 尚未連線");
     }
-  });
-  </script>
+    else if (data.type == 'pdf') {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 p-1';
+      li.innerHTML = `
+        <a href="/media/GameLog/${data.filename}" class="btn btn-outline-danger btn-sm" download>
+          <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
+        </a>
+        <span class="text-muted">${data.date}</span>
+      `;
+
+      // 插到最上方
+      pdf_box.prepend(li);
+    }
+    
+  };
+
+  socket.onclose = function() {
+    console.log("連線關閉");
+  };
+}
+
+connectSocket();
+
+// 綁定按鈕事件
+document.getElementById('start_game_btn').addEventListener('click', function() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send('game_start');
+  } else {
+    console.log("WebSocket 尚未連線");
+  }
+});
+</script>
 </body>
 </html>
