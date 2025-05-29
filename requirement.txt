@@ -3,3 +3,4 @@ openai==1.75.0
 django==5.0.3
 fpdf2
 PyMuPDF
+PyYAML
