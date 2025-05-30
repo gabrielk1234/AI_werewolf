@@ -18,7 +18,7 @@ setx GEMINI_API_KEY your_api_key_here
 
 **確認是否設定成功：**
 ```bash
-echo %GEMINI_API_KEY%</code></pre>
+echo %GEMINI_API_KEY%
 ```
 
 ## 🛠️ 安裝教學
