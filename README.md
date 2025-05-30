@@ -1,22 +1,46 @@
-# AI_werewolf
-我是國立高雄科技大學資管所碩士一甲的龔玖恩（F113118131），這是我的生成式AI的期末專案，主要内容是透過以Gemini API為大腦的AI狼人殺游戲。
+# 🐺 AI Werewolf Game  
+👤 作者：龔玖恩（F113118131）  
+🏫 國立高雄科技大學 資訊管理研究所碩士班一年級  
 
-## Register Gemini Api Key
-Website: https://aistudio.google.com/app/apikey
-**open cmd**
-<pre><code>setx GEMINI_API_KEY *your_api_key_here* </code></pre>
-**check the variable**
-<pre><code>echo %GEMINI_API_KEY%</code></pre>
+本專案是「生成式 AI」課程的期末作品，主題為結合 **Gemini API** 的狼人殺遊戲，透過 AI 進行推理與對話，模擬真實狼人殺對局。
 
-## How To Install
-**create enviroment**
-<pre><code>conda create --name werewolf python=3.10.0</code></pre>
-<pre><code>conda activate werewolf</code></pre>
-**clone project**
-<pre><code>git clone https://github.com/gabrielk1234/AI_werewolf.git</code></pre>
-<pre><code>cd AI_werewolf/</code></pre>
-**install requirement**
-<pre><code>pip install -r .\requirement.txt</code></pre>
-<pre><code>cd werewolfgame</code></pre>
-**start server**
-<pre><code>python manage.py runserver</code></pre>
+---
+
+## 🔑 註冊 Gemini API 金鑰
+
+前往官方網站申請：  
+👉 [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+
+**設定環境變數（Windows CMD）：**
+```bash
+setx GEMINI_API_KEY your_api_key_here
+```
+
+**確認是否設定成功：**
+```bash
+echo %GEMINI_API_KEY%</code></pre>
+```
+
+## 🛠️ 安裝教學
+**1️⃣ 建立虛擬環境（使用 Conda）**
+```bash
+conda create --name werewolf python=3.10.0
+conda activate werewolf
+```
+
+**2️⃣ 下載專案**
+```bash
+git clone https://github.com/gabrielk1234/AI_werewolf.git
+cd AI_werewolf/
+```
+
+**3️⃣ 安裝相依套件**
+```bash
+pip install -r .\requirement.txt
+```
+
+**4️⃣ 啟動伺服器**
+```bash
+python manage.py runserver
+cd werewolfgame
+```
