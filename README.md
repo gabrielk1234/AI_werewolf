@@ -39,10 +39,10 @@ cd AI_werewolf/
 pip install -r .\requirement.txt
 ```
 
-**For any question： email F113118131@nkust.edu.tw**
-
 **4️⃣ 啟動伺服器**
 ```bash
 cd werewolfgame
 python manage.py runserver
 ```
+
+**For any question： email F113118131@nkust.edu.tw**
