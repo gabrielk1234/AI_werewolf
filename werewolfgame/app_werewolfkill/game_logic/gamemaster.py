@@ -14,6 +14,8 @@ player：玩家發言or投票
 class GameMaster():
     def __init__(self,messages):
         # Game Record Initialize
+        names = ['Alex','Anson','Bob','Charlie','Diana','Eve']
+        random.shuffle(names)
         
         self.wolf1 = WerewolfCharacter(name="Alex", role="werewolf", teammate="Anson")
         self.wolf2 = WerewolfCharacter(name="Anson", role="werewolf", teammate="Alex")
@@ -21,6 +23,13 @@ class GameMaster():
         self.villager2 = WerewolfCharacter(name="Charlie", role="villager")
         self.seer = WerewolfCharacter(name="Diana", role="seer")
         self.witch = WerewolfCharacter(name="Eve", role="witch")
+        
+        # self.wolf1 = WerewolfCharacter(name=names.pop(), role="werewolf", teammate="Anson")
+        # self.wolf2 = WerewolfCharacter(name=names.pop(), role="werewolf", teammate="Alex")
+        # self.villager1 = WerewolfCharacter(name=names.pop(), role="villager")
+        # self.villager2 = WerewolfCharacter(name=names.pop(), role="villager")
+        # self.seer = WerewolfCharacter(name=names.pop(), role="seer")
+        # self.witch = WerewolfCharacter(name=names.pop(), role="witch")
 
         self.moderator = Moderator([self.wolf1, self.wolf2, self.villager1, self.villager2, self.seer, self.witch])
         self.messages = messages

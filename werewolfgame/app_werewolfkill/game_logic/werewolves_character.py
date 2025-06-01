@@ -1,6 +1,7 @@
 from openai import OpenAI
+from groq import Groq
 import time
-from app_werewolfkill.game_logic.config import url,api_key,system_prompt,action_prompt
+from app_werewolfkill.game_logic.config import MODEL,gemini_api_key,system_prompt,action_prompt,url
 
 class WerewolfCharacter:
     def __init__(self, name:str, role:str, teammate=None):
@@ -39,8 +40,8 @@ class WerewolfCharacter:
             self.memory['investigate_history'] = []
             
         self.client = OpenAI(
-            base_url=url,
-            api_key=api_key
+            api_key=gemini_api_key,
+            base_url=url
         )
         
         self.set_system_prompt()
@@ -64,7 +65,7 @@ class WerewolfCharacter:
             speech_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
 
         response = self.client.chat.completions.create(
-            model="gemini-2.0-flash",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": self.speech_prompt},
                 {"role": "user", "content": action_prompt[self.role]['action_info'].format(**speech_msg_context)},
@@ -101,7 +102,7 @@ class WerewolfCharacter:
                                                                    statement_history=self.memory['statement_history'],
                                                                    has_poison_potion=self.has_poison_potion)
         response = self.client.chat.completions.create(
-            model="gemini-2.0-flash",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": self.night_prompt},
                 {"role": "user", "content": prompt},
@@ -121,7 +122,7 @@ class WerewolfCharacter:
             vote_info = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
 
         response = self.client.chat.completions.create(
-            model="gemini-2.0-flash",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": self.vote_prompt},
                 {"role": "user", "content": action_prompt[self.role]['action_info'].format(**vote_info)},
@@ -141,7 +142,7 @@ class WerewolfCharacter:
             last_msg_context = {"night":self.memory['night'],"killed_players":self.memory['kill_history'],"player_alive":self.memory['player_alive'],"potion_history":self.memory['potion_history'],"statement_history":self.memory['statement_history']}  
 
         response = self.client.chat.completions.create(
-            model="gemini-2.0-flash",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": self.last_msg_prompt},
                 {"role": "user", "content": action_prompt[self.role]['action_info'].format(**last_msg_context)},

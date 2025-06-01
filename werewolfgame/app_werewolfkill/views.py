@@ -4,13 +4,21 @@ import fitz  # PyMuPDF
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
-from app_werewolfkill.game_logic.config import url,api_key,analysis_prompt
+from groq import Groq
+from app_werewolfkill.game_logic.config import MODEL,gemini_api_key,analysis_prompt,url
 from django.http import JsonResponse
 
 # Create your views here.
 def home(request):
     return render(request, 'app_werewolfkill/home.html')
 
+@csrf_exempt
+def delete_log(request):
+    if request.method == 'POST':
+        filename = request.POST.get('filename')
+        os.remove(f'media/GameLog/{filename}')
+        return JsonResponse({"None":None})
+        
 @csrf_exempt
 def api_read_pdf(request):
     if request.method == 'POST':
@@ -24,12 +32,12 @@ def api_read_pdf(request):
         
 def analysis_gameplay(gameplay:str):
     client = OpenAI(
-            base_url=url,
-            api_key=api_key
+            api_key=gemini_api_key,
+            base_url=url
         )
     
     response = client.chat.completions.create(
-            model="gemini-2.0-flash",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": analysis_prompt},
                 {"role": "user", "content": f"以下是對局資料，請幫我分析：\n{gameplay}"},

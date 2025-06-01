@@ -90,7 +90,7 @@
                 <div class="card-header bg-primary text-white">
                     游玩記錄下載
                 </div>
-                <div class="card-body overflow-auto" style="max-height: 800px;">
+                <div class="card-body overflow-auto" style="max-height: 550px;">
                   <ul id ='pdf-box' >
                   </ul>
                 </div>
@@ -188,6 +188,10 @@ function connectSocket() {
             <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
           </a>
           <span class="text-muted">${data.date[i]}</span>
+          <button class="btn btn-outline-secondary btn-sm delete-log-btn"
+            data-file="${data.pdf[i]}">
+          刪除
+          </button>
         `;
 
         // 插到最上方
@@ -202,6 +206,10 @@ function connectSocket() {
           <i class="bi bi-file-earmark-pdf-fill me-2"></i>下載 PDF
         </a>
         <span class="text-muted">${data.date}</span>
+        <button class="btn btn-outline-secondary btn-sm delete-log-btn"
+            data-file="${data.filename}">
+          刪除
+        </button>
       `;
 
       // 插到最上方
@@ -217,7 +225,7 @@ function connectSocket() {
 
 connectSocket();
 
-// 綁定按鈕事件
+// 開始按鈕事件
 document.getElementById('start_game_btn').addEventListener('click', function() {
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send('game_start');
@@ -225,6 +233,27 @@ document.getElementById('start_game_btn').addEventListener('click', function() {
     console.log("WebSocket 尚未連線");
   }
 });
+
+$(document).on("click", ".delete-log-btn", function () {
+  const $btn = $(this);
+  const filename = $btn.data("file");
+  if (!confirm(`確定要刪除 ${filename} 嗎？`)) return;
+  $.ajax({
+    url: "/delete-log/",
+    method: "POST",
+    data: {
+      filename: filename
+    },
+    success: function (response) {
+      $btn.closest("li").remove(); // 只刪除這個按鈕對應的那一列
+    },
+    error: function (xhr) {
+      alert("刪除失敗：" + xhr.responseJSON?.error || "未知錯誤");
+    }
+  });
+  // 其他同上...
+});
+
 </script>
 </body>
 </html>
