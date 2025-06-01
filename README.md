@@ -41,6 +41,6 @@ pip install -r .\requirement.txt
 
 **4️⃣ 啟動伺服器**
 ```bash
-python manage.py runserver
 cd werewolfgame
+python manage.py runserver
 ```
