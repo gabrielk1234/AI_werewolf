@@ -42,7 +42,7 @@ pip install -r .\requirement.txt
 **4️⃣ 啟動伺服器**
 ```bash
 cd werewolfgame
-python manage.py runserver
+daphne werewolfgame.asgi:application
 ```
 
 **For any question： email F113118131@nkust.edu.tw**
