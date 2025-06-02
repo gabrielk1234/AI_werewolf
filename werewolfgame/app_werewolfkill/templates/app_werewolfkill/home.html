@@ -50,7 +50,9 @@
                     上帝視角
                 </div>
                 <div class="card-body" >
-                    <div id="god-mode-box" class="border rounded p-3 mb-3" style="height:355px"></div>
+                    <div id="god-mode-box" class="border rounded p-3 mb-3" style="height:355px">
+                        <div class="message god">測試訊息<span class="custom-tooltip" data-tooltip="撒謊加工費去問丟棄尾遞歸千萬個丟棄五百">？</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -174,7 +176,12 @@ function connectSocket() {
       chatbox.innerHTML += `<div class="message system">${data.value}</div>`;
     }
     else if ((data.type == 'god') && (isGodMode)) {
+      if ('reason' in data) {
+        godmode_box.innerHTML += `<div class="message god">${data.value}<span class="custom-tooltip" data-tooltip="${data.reason}">？</span></div>`;
+      }
+      else {
       godmode_box.innerHTML += `<div class="message god">${data.value}</div>`;
+      }
     }
     else if (data.type == 'player') {
       chatbox.innerHTML += `<div class="message player">${data.value}</div>`;
@@ -253,6 +260,38 @@ $(document).on("click", ".delete-log-btn", function () {
   });
   // 其他同上...
 });
+
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest('.custom-tooltip');
+  if (!el) return;
+
+  const text = el.getAttribute('data-tooltip');
+  if (!text) return;
+
+  const OFFSET = 10;
+  const tooltipEl = document.createElement('div');
+  tooltipEl.className = 'tooltip-popup';
+  tooltipEl.innerText = text;
+  document.body.appendChild(tooltipEl);
+
+  const rect = el.getBoundingClientRect();
+  const tipRect = tooltipEl.getBoundingClientRect();
+
+  let top = rect.top - tipRect.height - OFFSET;
+  if (top < 0) top = rect.bottom + OFFSET;
+
+  tooltipEl.style.top = `${top}px`;
+  tooltipEl.style.left = `${Math.max(rect.left, 8)}px`;
+  tooltipEl.classList.add('show');
+
+  // 用 mouseout 關閉 tooltip
+  const removeTooltip = () => {
+    tooltipEl.remove();
+    el.removeEventListener('mouseleave', removeTooltip);
+  };
+  el.addEventListener('mouseleave', removeTooltip);
+});
+
 
 </script>
 </body>

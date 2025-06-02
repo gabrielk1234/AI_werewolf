@@ -16,7 +16,9 @@
     flex-grow: 1;
     padding: 10px;
     overflow-y: auto;
+    overflow-x: hidden;
     background-color: #ffffff;
+    position: relative;
     color: rgb(76 61 61);
     border-radius: 10px;
     margin-bottom: 10px;
@@ -63,4 +65,48 @@
 .card-body-scroll {
     overflow-y: auto;
     max-height: calc(100% - 56px); /* 減去 card-header 的高度 */
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.custom-tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #36f4a2;
+  color: rgb(0, 0, 0);
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: help;
+  animation: pulse 1.5s infinite;
+  transition: transform 0.2s ease-in-out;
+}
+
+
+
+.tooltip-popup {
+  position: fixed;
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 220px;
+  word-break: break-word;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  pointer-events: none; /* 不擋滑鼠事件 */
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+.tooltip-popup.show {
+  opacity: 1;
 }

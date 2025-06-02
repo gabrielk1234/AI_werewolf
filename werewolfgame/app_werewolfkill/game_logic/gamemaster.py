@@ -65,8 +65,8 @@ class GameMaster():
         self.potion_status = {'has_heal':self.witch.has_heal_potion, 'has_poison':self.witch.has_poison_potion}
 
         # Wolf Action
-        wolf_act,kill_target = self.wolf_action()
-        msg = {'type':'god','value':wolf_act} # 狼人選擇殺人目標
+        wolf_act,kill_target,reason = self.wolf_action()
+        msg = {'type':'god','value':wolf_act,'reason':reason} # 狼人選擇殺人目標
         yield msg
 
         # Seer Action
@@ -195,14 +195,15 @@ class GameMaster():
         
         try:
             # print(response) # 查看狼人選擇的邏輯 (for testing)
-            
-            kill_target = extract_json(response)['kill_target']
+            result = extract_json(response)
+            reason = result['reason']
+            kill_target = result['kill_target']
             kill_target = [player for player in self.moderator.left_players if player.name == kill_target][0]
             if kill_target.name not in [player.name for player in self.moderator.left_players]:
                 print(f"{rdm_wolf.name}選擇的殺人目標不在存活名單中")
                 assert False,f"{rdm_wolf.name}選擇的殺人目標不在存活名單中"
             
-            return f"{rdm_wolf.name}選擇了{kill_target.name}作為殺人目標",kill_target
+            return f"{rdm_wolf.name}選擇了{kill_target.name}作為殺人目標",kill_target,reason
         except json.JSONDecodeError as e:
             print("狼人-殺人步驟解析錯誤")
             print(response)
