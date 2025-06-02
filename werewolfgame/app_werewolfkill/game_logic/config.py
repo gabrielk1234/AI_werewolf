@@ -1,7 +1,6 @@
 import os
 
 gemini_api_key = os.environ['GEMINI_API_KEY']
-groq_api_key = os.environ['GROQ_API_KEY']
 MODEL = "gemini-2.5-flash-preview-05-20"
 
 url="https://generativelanguage.googleapis.com/v1beta/openai/"

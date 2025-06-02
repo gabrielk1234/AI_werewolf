@@ -73,8 +73,8 @@ class GameMaster():
         msg = {'type':'system','value':self.messages['seer_stage1']}
         yield msg
         if self.seer.is_alive:
-            seer_act = self.seer_action()
-            msg = {'type':'god','value':seer_act} # 預言家查驗
+            seer_act,reason = self.seer_action()
+            msg = {'type':'god','value':seer_act,'reason':reason} # 預言家查驗
         else: # 預言家已經死了的情況下
             seer_act = self.messages['seer_stage2'].format('...')
             msg = {'type':'god','value':seer_act} # 預言家查驗
@@ -87,8 +87,11 @@ class GameMaster():
         yield msg
 
         # Heal Stage
-        witch_heal_msg = self.witch_action_heal(kill_target)
-        msg = {'type':'god','value':witch_heal_msg}
+        witch_heal_msg,reason = self.witch_action_heal(kill_target)
+        if reason:
+            msg = {'type':'god','value':witch_heal_msg,'reason':reason}
+        else:
+            msg = {'type':'god','value':witch_heal_msg}
         yield msg
 
         # 女巫是否要用毒藥
@@ -96,8 +99,11 @@ class GameMaster():
         yield msg
 
         # Poison Stage
-        witch_poison_msg = self.witch_action_poison(kill_target)
-        msg = {'type':'god','value':witch_poison_msg}
+        witch_poison_msg,reason = self.witch_action_poison(kill_target)
+        if reason:
+            msg = {'type':'god','value':witch_poison_msg,'reason':reason}
+        else:
+            msg = {'type':'god','value':witch_poison_msg}
         yield msg
 
         # Day ....
@@ -215,8 +221,9 @@ class GameMaster():
         response = self.seer.night_action()
         try:
             # print(response) # 查看預言家選擇的邏輯
-            
-            investigate_target = extract_json(response)['investigate_target']
+            response = extract_json(response)
+            investigate_target = response['investigate_target']
+            reason = response['reason']
             if investigate_target not in [player.name for player in self.moderator.left_players]:
                 print(f"{self.seer.name}選擇的查驗目標不在存活名單中")
                 assert False,f"{self.seer.name}選擇的查驗目標不在存活名單中"
@@ -229,7 +236,7 @@ class GameMaster():
             
             # 將查驗結果寫入預言家的記憶中
             self.seer.memory['investigate_history'].append({investigate_target:result})
-            return self.messages['seer_stage2'].format(investigate_target)
+            return self.messages['seer_stage2'].format(investigate_target),reason
         except json.JSONDecodeError as e:
             print("預言家-查驗步驟解析錯誤")
             print(response)
@@ -242,8 +249,9 @@ class GameMaster():
             response = self.witch.night_action(killed_player=kill_target.name, potion_type='heal')
             try:
                 # print(response) # 查看女巫選擇的邏輯
-
-                self.use_heal = extract_json(response)['use_heal']
+                response = extract_json(response)
+                self.use_heal = response['use_heal']
+                reason = response['reason']
                 if self.use_heal: # 女巫選擇使用解藥
                     # 更新解藥狀態
                     self.witch.has_heal_potion = False
@@ -270,15 +278,17 @@ class GameMaster():
             self.killed_dict[kill_target] = '被狼人殺死'
 
 
-        return msg
+        return msg,reason if self.witch.is_alive and self.witch.has_heal_potion else None
 
         
     def witch_action_poison(self,kill_target):  
+        reason = None
         if self.witch.is_alive and self.witch.has_poison_potion and not self.used_heal: # 女巫還活著，有毒藥，以及這局沒使用過解藥的情況下
             response = self.witch.night_action(killed_player=kill_target.name, potion_type='poison')
             try:
                 # print(response) # 查看女巫選擇毒藥的邏輯
                 response = extract_json(response)
+                reason = response['reason']
                 use_poison = response['use_poison']
                 poison_target = response['poison_target']
                 if use_poison:
@@ -291,19 +301,19 @@ class GameMaster():
                     self.moderator.set_potion_status(potion_type='poison',person=poison_target.name)
                     self.witch.has_poison_potion = False
                     msg = f"女巫{self.witch.name}選擇使用了毒藥，毒死了{poison_target.name}"
-                    return msg
+                    return msg,reason
                 else:
-                    return "女巫不選擇使用毒藥"
+                    return "女巫不選擇使用毒藥",reason
             except json.JSONDecodeError as e:
                 print("女巫-毒藥步驟解析錯誤")
                 print(response)
                 assert e
 
         elif not self.witch.is_alive:
-            return "女巫已經被殺了，無法使用毒藥"
+            return "女巫已經被殺了，無法使用毒藥",reason
         
         else:
-            return "女巫已經使用過解藥了"
+            return "女巫已經使用過解藥了",None
            
     def renew_killed_list(self):
         # 更新狀態，如果有2個人死亡，只有女巫和狼人知道死因

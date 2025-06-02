@@ -51,7 +51,7 @@
                 </div>
                 <div class="card-body" >
                     <div id="god-mode-box" class="border rounded p-3 mb-3" style="height:355px">
-                        <div class="message god">測試訊息<span class="custom-tooltip" data-tooltip="撒謊加工費去問丟棄尾遞歸千萬個丟棄五百">？</span></div>
+                        
                     </div>
                 </div>
             </div>
@@ -261,12 +261,23 @@ $(document).on("click", ".delete-log-btn", function () {
   // 其他同上...
 });
 
+let currentTooltip = null;
+
+function removeTooltip() {
+  if (currentTooltip) {
+    currentTooltip.element.remove();
+    currentTooltip = null;
+  }
+}
+
 document.addEventListener('mouseover', (e) => {
   const el = e.target.closest('.custom-tooltip');
-  if (!el) return;
+  if (!el || el === currentTooltip?.anchor) return;
 
   const text = el.getAttribute('data-tooltip');
   if (!text) return;
+
+  removeTooltip(); // 先移除現有的
 
   const OFFSET = 10;
   const tooltipEl = document.createElement('div');
@@ -280,17 +291,33 @@ document.addEventListener('mouseover', (e) => {
   let top = rect.top - tipRect.height - OFFSET;
   if (top < 0) top = rect.bottom + OFFSET;
 
-  tooltipEl.style.top = `${top}px`;
-  tooltipEl.style.left = `${Math.max(rect.left, 8)}px`;
+  tooltipEl.style.position = 'absolute';
+  tooltipEl.style.top = `${top + window.scrollY}px`;
+  tooltipEl.style.left = `${Math.max(rect.left + window.scrollX, 8)}px`;
   tooltipEl.classList.add('show');
 
-  // 用 mouseout 關閉 tooltip
-  const removeTooltip = () => {
-    tooltipEl.remove();
-    el.removeEventListener('mouseleave', removeTooltip);
+  currentTooltip = {
+    anchor: el,
+    element: tooltipEl,
   };
-  el.addEventListener('mouseleave', removeTooltip);
 });
+
+document.addEventListener('mouseout', (e) => {
+  const from = e.target;
+  const to = e.relatedTarget;
+
+  if (
+    currentTooltip &&
+    !from.closest('.custom-tooltip') &&
+    !to?.closest('.tooltip-popup')
+  ) {
+    removeTooltip();
+  }
+});
+
+// ⬇️ 這是關鍵：滾動時自動關掉 tooltip
+window.addEventListener('scroll', removeTooltip, true);
+
 
 
 </script>
